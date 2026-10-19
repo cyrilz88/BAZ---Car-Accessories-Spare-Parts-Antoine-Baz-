@@ -1,5 +1,7 @@
 import { sb, pick, esc } from '../core.js';
 import { tr, safe, card, bindOrder } from '../ui.js';
+const PIC = { interior:'images/cat-interior.jpg', fluids:'images/cat-fluids.jpg', electrical:'images/cat-electrical.jpg' };
+const img = c => c.image || PIC[c.slug];
 const ICON = { fluids:'🛢️', electrical:'🔋', exterior:'🚘', interior:'💺', electronics:'📟', spare:'⚙️' };
 export async function mount(el){
   el.innerHTML = `<section><div class="hero3"><div><h1>${tr('Car Accessories','إكسسوارات السيارات')}</h1><p>${tr('Find the best accessories for your car','اعثر على أفضل إكسسوارات سيارتك')}</p><a class="btn" href="#/products">${tr('SHOP NOW','تسوق الآن')}</a></div></div></section>
@@ -9,7 +11,7 @@ export async function mount(el){
    <section><div class="band"><div><h2>${tr('Want to open your own accessories shop?','تريد فتح متجر إكسسوارات خاص بك؟')}</h2><p>${tr('We advise you, supply your first stock and refill it with best-sellers.','نقدّم لك الاستشارة، ونجهّز بضاعتك الأولى ونعيد التعبئة بالأكثر مبيعاً.')}</p></div><a class="btn" href="#/partner">${tr('Become a partner','كن شريكاً')}</a></div></section>`;
   await Promise.all([
     safe(el.querySelector('#h-cat'), async s => { const { data, error } = await sb.from('categories').select('*').order('sort'); if (error) throw error;
-      s.innerHTML = `<h2>${tr('Shop by category','تسوق حسب الفئة')}</h2><div class="tiles">${data.map(c=>`<a class="tile" href="#/products?cat=${esc(c.slug)}" ${c.image?`style="--img:url('${esc(c.image)}')"`:''}>${c.image?'':`<span>${ICON[c.slug]||'🔧'}</span>`}<b>${esc(pick(c,'name'))}</b><i>${tr('SHOP NOW','تسوق الآن')}</i></a>`).join('')}</div>`; }),
+      s.innerHTML = `<h2>${tr('Shop by category','تسوق حسب الفئة')}</h2><div class="tiles">${data.map(c=>`<a class="tile" href="#/products?cat=${esc(c.slug)}" ${img(c)?`style="--img:url('${esc(img(c))}')"`:''}>${img(c)?'':`<span>${ICON[c.slug]||'🔧'}</span>`}<b>${esc(pick(c,'name'))}</b><i>${tr('SHOP NOW','تسوق الآن')}</i></a>`).join('')}</div>`; }),
     safe(el.querySelector('#h-feat'), async s => { const { data, error } = await sb.from('products').select('*').eq('active',true).eq('featured',true).limit(8); if (error) throw error;
       s.innerHTML = `<h2>${tr('Featured products','منتجات مميزة')}</h2><div class="grid">${data.map(card).join('')||'<p class="mut">—</p>'}</div>`; bindOrder(s, data); })
   ]);

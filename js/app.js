@@ -1,3 +1,4 @@
+import { settings, L, tel } from './settings.js';
 import { applyLang, setLang, lang, sb, requireAuth } from './core.js';
 import { tr } from './ui.js';
 applyLang();
@@ -18,3 +19,9 @@ async function route(){
 addEventListener('hashchange', route); route();
 sb.auth.getSession().then(({ data:{ session } }) => { const b = $('#acct'); b.textContent = session ? tr('Sign out','خروج') : tr('Sign in','تسجيل الدخول');
   b.onclick = async () => { if (session) { await sb.auth.signOut(); location.reload(); } else if (await requireAuth()) location.reload(); }; }).catch(()=>{});
+
+settings().then(s => { if (s.logo_image) document.querySelectorAll('.logo img').forEach(i => i.src = s.logo_image);
+  if (s.instagram) $('#ig').href = s.instagram; const ft = L(s,'footer'); if (ft) $('#ftag').textContent = ft;
+  if (s.phone1) { $('#f1').textContent = s.phone1; $('#f1').href = 'tel:' + tel(s.phone1); $('#topcall').href = 'tel:' + tel(s.phone1); }
+  if (s.phone2) { $('#f2').textContent = s.phone2; $('#f2').href = 'tel:' + tel(s.phone2); }
+  const ad = L(s,'address'); if (ad) $('#faddr').textContent = ad; }).catch(() => {});

@@ -4,7 +4,7 @@ const STOCK = 'sel:in_stock,low_stock,out_of_stock';
 const CFG = {
   products:{ title:'Products', label:'name_en', fields:[['category_id','Category','cat'],['name_en','Name (English)','text'],['name_ar','Name (Arabic)','text'],['desc_en','Description (English)','area'],['desc_ar','Description (Arabic)','area'],['price','Price (USD)','num'],['stock','Stock',STOCK],['vehicle_types','Vehicle types (comma separated: car,truck,4x4)','list'],['specs','Specs (one per line, Name: value)','specs'],['images','Photo links (one per line)','img'],['featured','Featured on top','bool'],['active','Visible on site','bool']] },
   inhouse_items:{ title:'Seat covers (in-house)', label:'name_en', fields:[['name_en','Name (English)','text'],['name_ar','Name (Arabic)','text'],['desc_en','Description (English)','area'],['desc_ar','Description (Arabic)','area'],['materials','Materials','text'],['colors','Colors (comma separated)','list'],['production_time','Production time','text'],['price_from','Price from (USD)','num'],['images','Photo links (one per line)','img'],['active','Visible on site','bool']] },
-  categories:{ title:'Categories', label:'name_en', fields:[['name_en','Name (English)','text'],['name_ar','Name (Arabic)','text'],['slug','Short code (no spaces)','text'],['sort','Order number','num']] },
+  categories:{ title:'Categories', label:'name_en', fields:[['name_en','Name (English)','text'],['name_ar','Name (Arabic)','text'],['slug','Short code (no spaces)','text'],['sort','Order number','num'],['image','Tile photo (home page)','pic']] },
   orders:{ title:'Orders', status:['new','confirmed','shipped','delivered','cancelled'] },
   requests:{ title:'Requests', status:['new','in_progress','done','cancelled'] }
 };
@@ -39,6 +39,7 @@ function edit(t, r){
     else if (ty==='list') h=`<input name="${k}" value="${esc((v||(k==='vehicle_types'?['car','truck','4x4']:[])).join(', '))}">`;
     else if (ty==='specs') h=`<textarea name="${k}" rows="4">${esc(Object.entries(v||{}).map(([a,b])=>`${a}: ${b}`).join('\n'))}</textarea>`;
     else if (ty==='img') h=`<textarea name="${k}" rows="3">${esc((v||[]).join('\n'))}</textarea><input type="file" name="files" accept="image/*" multiple>`;
+    else if (ty==='pic') h=`<input name="${k}" value="${esc(v)}" placeholder="Photo link"><input type="file" name="${k}_file" accept="image/*">`;
     else h=`<input name="${k}" value="${esc(v)}">`;
     return `<div class="f"><label>${l}</label>${h}</div>`; };
   d.innerHTML = `<form><h3>${r.id?'Edit':'Add'}</h3>${CFG[t].fields.map(inp).join('')}<p class="err"></p><div class="row"><button class="btn">Save</button><button type="button" class="btn ghost" id="x">Cancel</button></div></form>`;
@@ -52,6 +53,7 @@ function edit(t, r){
         else if (ty==='img') { o[k]=v.split('\n').map(s=>s.trim()).filter(Boolean);
           for (const file of f.getAll('files')) { if(!file.name) continue; const p=`${t}/${Date.now()}-${file.name.replace(/[^\w.-]/g,'_')}`;
             const up=await sb.storage.from('media').upload(p,file); if(up.error) throw up.error; o[k].push(sb.storage.from('media').getPublicUrl(p).data.publicUrl); } }
+        else if (ty==='pic') { o[k]=v||null; const file=f.get(k+'_file'); if (file&&file.name) { const p=`${t}/${Date.now()}-${file.name.replace(/[^\w.-]/g,'_')}`; const up=await sb.storage.from('media').upload(p,file); if(up.error) throw up.error; o[k]=sb.storage.from('media').getPublicUrl(p).data.publicUrl; } }
         else o[k]=v; }
       const q = r.id ? sb.from(t).update(o).eq('id',r.id) : sb.from(t).insert(o); const {error}=await q; if(error) throw error;
       d.remove(); show(t);

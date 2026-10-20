@@ -12,7 +12,7 @@ $('#search').onsubmit = e => { e.preventDefault(); location.hash = '#/products?q
 async function route(){
   const [path, qs] = location.hash.slice(2).split('?'), p = PAGES[path] ? path : 'home', view = $('#view');
   menu.querySelectorAll('a').forEach(a => a.classList.toggle('on', a.dataset.p===p));
-  view.innerHTML = ''; scrollTo(0,0); document.title = `BAZ | ${tr(...PAGES[p])}`;
+  document.body.classList.toggle('home', p==='home'); view.innerHTML = ''; scrollTo(0,0); document.title = `BAZ | ${tr(...PAGES[p])}`;
   try { const m = await import(`./pages/${p}.js`); await m.mount(view, new URLSearchParams(qs||'')); }   // each page is isolated
   catch (e) { console.error(`[page:${p}]`, e); view.innerHTML = `<section><div class="down"><p>${tr('This page is temporarily unavailable. Please try again shortly.','هذه الصفحة غير متاحة مؤقتاً. حاول لاحقاً.')}</p></div></section>`; }
 }
@@ -22,6 +22,6 @@ sb.auth.getSession().then(({ data:{ session } }) => { const b = $('#acct'); b.te
 
 settings().then(s => { if (s.logo_image) document.querySelectorAll('.logo img').forEach(i => i.src = s.logo_image);
   if (s.instagram) $('#ig').href = s.instagram; const ft = L(s,'footer'); if (ft) $('#ftag').textContent = ft;
-  if (s.phone1) { $('#f1').textContent = s.phone1; $('#f1').href = 'tel:' + tel(s.phone1); $('#topcall').href = 'tel:' + tel(s.phone1); }
+  if (s.phone1) { $('#f1').textContent = s.phone1; $('#f1').href = 'tel:' + tel(s.phone1); if ($('#topcall')) $('#topcall').href = 'tel:' + tel(s.phone1); }
   if (s.phone2) { $('#f2').textContent = s.phone2; $('#f2').href = 'tel:' + tel(s.phone2); }
   const ad = L(s,'address'); if (ad) $('#faddr').textContent = ad; }).catch(() => {});
